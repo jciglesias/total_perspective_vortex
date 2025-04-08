@@ -1,11 +1,7 @@
 import streamlit as st
 import src.utils as ut
 from time import sleep
-
-def load_data(files):
-    for file in files:
-        st.write(f"Loading data from {file}")
-        sleep(5)
+from src.filter_data import load_data, filter_data
 
 def train_model():
     st.write("Training model...")
@@ -25,15 +21,20 @@ task = st.selectbox(
     index=0,
 )
 
-files = ut.get_file_name(subject, task)
+# files = ut.get_file_name(subject, task)
 is_trained = st.toggle(label="Train model", value=False)
 if is_trained:
     placeholder = st.empty()
     with placeholder.container():
-        load_data(files)
+        col_1, col_2 = st.columns(2)
+        col_1.write("Raw data")
+        col_2.write("Filtered data")
+        for raw, fig in load_data(subject, task):
+            with col_1:
+                st.pyplot(fig)
+            with col_2:
+                st.pyplot(filter_data(raw, 13, 30).plot())
         st.write("Data loaded successfully!")
-    sleep(5)
-    placeholder.empty()
     with placeholder.container():
         train_model()
         st.write("Model trained successfully!")
