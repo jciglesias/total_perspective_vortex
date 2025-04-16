@@ -64,19 +64,13 @@ def load_data(subject: str, task: str):
     """
     Load and preprocess data from a list of files.
     """
-    col_1, col_2 = st.columns(2)
-    col_1.write("Raw data")
-    col_2.write("Filtered data")
     files = get_file_name(subject, task)
-    filtered_raws = []
+    st.session_state[f"{subject}_{task}_raws"] = []
+    st.session_state[f"{subject}_{task}_filtered_raws"] = []
+    filtered_raws = st.session_state[f"{subject}_{task}_filtered_raws"]
     for file in files:
-        # find file in ../tpv_files/subject
         raw = read_raw_data(f"../tpv_files/{subject}/{file}")
-        with col_1:
-            st.pyplot(raw.plot())
-        with col_2:
-            filtered_raw = filter_data(raw, 13, 30)
-            st.pyplot(filtered_raw.plot())
+        st.session_state[f"{subject}_{task}_raws"].append(raw)
+        filtered_raw = filter_data(raw, 13, 30)
         filtered_raws.append(filtered_raw)
     st.toast("Data loaded successfully!")
-    return filtered_raws
