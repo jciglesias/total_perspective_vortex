@@ -21,9 +21,9 @@ def filter_data(raw: mne.io.BaseRaw, l_freq, h_freq):
     try:
         raw.filter(l_freq, h_freq, fir_design='firwin')
         wavelet = 'db4'
-        data, detail_coeffs = pywt.dwt(raw.get_data(), wavelet)
+        aprox_coeffs, detail_coeffs = pywt.dwt(raw.get_data(), wavelet, mode='symmetric')
         annotations = raw.annotations
-        raw = mne.io.RawArray(data, raw.info, first_samp=raw.first_samp)
+        raw = mne.io.RawArray(detail_coeffs, raw.info, first_samp=raw.first_samp)
         raw.set_annotations(annotations)
         return raw
     except Exception as e:
