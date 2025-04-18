@@ -1,7 +1,9 @@
 import mne
 import pywt
+from mne.io import BaseRaw
 import streamlit as st
 from src.utils import get_file_name
+from src.Classes.edf import EDF
 
 def read_raw_data(filename: str):
     """
@@ -60,17 +62,23 @@ def preprocess_data(filename: str):
 
     return epochs
 
+def create_image(raw: BaseRaw, filename: str):
+    fig = raw.plot()
+    file_address = f"./images/{filename}"
+    fig.savefig(file_address, format="png", dpi=300, bbox_inches="tight")
+    return file_address
+
+@st.cache_data(show_spinner=True)
 def load_data(subject: str, task: str):
     """
     Load and preprocess data from a list of files.
     """
     files = get_file_name(subject, task)
-    st.session_state[f"{subject}_{task}_raws"] = []
-    st.session_state[f"{subject}_{task}_filtered_raws"] = []
-    filtered_raws = st.session_state[f"{subject}_{task}_filtered_raws"]
+    edfs = []
     for file in files:
-        raw = read_raw_data(f"../tpv_files/{subject}/{file}")
-        st.session_state[f"{subject}_{task}_raws"].append(raw)
-        filtered_raw = filter_data(raw, 13, 30)
-        filtered_raws.append(filtered_raw)
-    st.toast("Data loaded successfully!")
+        edf = EDF(read_raw_data(f"../tpv_files/{subject}/{file}"))
+        edf.raw_image = create_image(edf.raw, f"{file}_raw_image.png")
+        edf.filtered = filter_data(edf.raw, 13, 30)
+        edf.filtered_image = create_image(edf.filtered, f"{file}_filtered_image.png")
+        edfs.append(edf)
+    return edfs
