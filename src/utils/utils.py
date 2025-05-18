@@ -1,3 +1,4 @@
+import mne
 
 subjects = [f"S{n:03}" for n in range(1, 110)]
 
@@ -19,3 +20,14 @@ def get_file_name(subject, task):
     
     files = [f'{subject}{task_}.edf' for task_ in tasks[task]]
     return files
+
+def read_raw_data(filename: str):
+    """
+    Read raw data from a file and return the raw object.
+    """
+    try:
+        raw = mne.io.read_raw_edf(filename, preload=True)
+        return raw
+    except Exception as e:
+        print(f"Error reading raw data: {e}")
+        return None

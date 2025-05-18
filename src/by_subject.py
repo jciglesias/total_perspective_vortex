@@ -1,8 +1,8 @@
 import streamlit as st
-import src.utils as ut
-from time import sleep
-from src.filter_data import load_data
-from src.train_model import train_model
+import src.utils.utils as ut
+from src.utils.filter_data import load_data, read_raw_data
+from src.utils.train_model import train_model
+from src.utils.predict import predict
 
 def show_data(image, raw, col):
     with col:
@@ -38,9 +38,13 @@ with load_tab:
         show_data(edf.raw_image, edf.raw, col_l)
         show_data(edf.filtered_image, edf.filtered, col_r)
 with train_tab:
-    if is_trained:
-        st.write("Model already trained.")
-    else:
+    if not is_trained:
         st.session_state[f"{subject}_{task}_pipeline"] = train_model(st.session_state[f"{subject}_{task}_edfs"])
+    st.write("Model trained.")
 with predict_tab:
-    st.write("Predicting...")
+    subject_to_predict = st.selectbox("Select a subject to predict", subjects[:subjects.index(subject)] + subjects[subjects.index(subject) + 1:])
+    with st.spinner("Predicting...", show_time=True):
+        if f"{subject}_{task}_pipeline" in st.session_state:
+            predict(st.session_state[f"{subject}_{task}_pipeline"], subject_to_predict, task)
+        else:
+            st.write("No model trained yet.")
