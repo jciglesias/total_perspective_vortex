@@ -9,6 +9,8 @@ class EDF:
     labels: np.ndarray | None
     raw_image: str | None
     filtered_image: str | None
+    training: bool | None
+    filename: str | None
 
     def __init__(self, raw: BaseRaw):
         self.raw = raw
@@ -17,3 +19,5 @@ class EDF:
         self.labels = None
         self.raw_image = None
         self.filtered_image = None
+        self.training = None
+        self.filename = None

@@ -35,6 +35,8 @@ with load_tab:
     col_l.write("Raw data")
     col_r.write("Filtered data")
     for edf in st.session_state[f"{subject}_{task}_edfs"]:
+        edf.raw_image = ut.create_image(edf.raw, f"{edf.filename}_raw_image.png")
+        edf.filtered_image = ut.create_image(edf.filtered, f"{edf.filename}_filtered_image.png")
         show_data(edf.raw_image, edf.raw, col_l)
         show_data(edf.filtered_image, edf.filtered, col_r)
 with train_tab:
@@ -42,9 +44,22 @@ with train_tab:
         st.session_state[f"{subject}_{task}_pipeline"] = train_model(st.session_state[f"{subject}_{task}_edfs"])
     st.write("Model trained.")
 with predict_tab:
-    subject_to_predict = st.selectbox("Select a subject to predict", subjects[:subjects.index(subject)] + subjects[subjects.index(subject) + 1:])
     with st.spinner("Predicting...", show_time=True):
         if f"{subject}_{task}_pipeline" in st.session_state:
-            predict(st.session_state[f"{subject}_{task}_pipeline"], subject_to_predict, task)
+            table = predict(st.session_state[f"{subject}_{task}_pipeline"], st.session_state[f"{subject}_{task}_edfs"])
+            col1, col2 = st.columns(2)
+            with col1:
+                st.dataframe(
+                    table,
+                    hide_index=True,
+                )
+            with col2:
+                correct = sum(table['equals'])
+                total = len(table['equals'])
+                st.metric(
+                    label="Accuracy",
+                    value=f"{correct}/{total}",
+                    delta=f"{correct / total:.2%}",
+                )
         else:
             st.write("No model trained yet.")
