@@ -1,23 +1,19 @@
-from src.Classes.edf import EDF
-from sklearn.pipeline import Pipeline
+from src.Classes.model import Model
 import streamlit as st
 from src.utils.utils import prepare_epochs_labels_for_pipeline
 
 
-def predict(pipeline: Pipeline, edfs: list[EDF]):
+def predict(model: Model):
     """
     Predict the labels for the given raw data using the trained pipeline.
     """
-    if pipeline is None:
-        return None
     try:
-        x, labels = prepare_epochs_labels_for_pipeline(edfs)
-        predictions = pipeline.predict(x)
-        equals = [a == y for a, y in zip(predictions, labels)]
+        predictions = model.pipeline.predict(model.x_test)
+        equals = [a == y for a, y in zip(predictions, model.y_test)]
         table = {
             "Epochs": range(1, len(predictions) + 1),
             "Prediction": predictions,
-            "Truth": labels,
+            "Truth": model.y_test,
             "equals": equals,
         }
         return table

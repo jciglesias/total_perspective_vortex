@@ -1,10 +1,9 @@
 import mne
 import pywt
-from mne.io import BaseRaw
 from src.utils.utils import get_file_name
 from src.Classes.edf import EDF
-from src.utils.utils import read_raw_data, channels
-import random
+from src.Classes.model import Model
+from src.utils.utils import read_raw_data, prepare_epochs_labels_for_pipeline
 
 def filter_data(raw: mne.io.BaseRaw, l_freq, h_freq):
     """
@@ -33,11 +32,4 @@ def load_data(subject: str, task: str):
         edf.filename = file
         edf.filtered = filter_data(edf.raw, 13, 30)
         edfs.append(edf)
-    for_training = random.sample(range(len(edfs)), int(len(edfs) * 0.7))
-    for i in range(len(edfs)):
-        if i in for_training:
-            edfs[i].training = True
-        else:
-            edfs[i].training = False
-    return edfs
-
+    return Model(edfs)

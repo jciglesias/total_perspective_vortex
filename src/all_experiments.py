@@ -8,10 +8,9 @@ tasks_accuracies = {}
 for task in tasks:
     tasks_accuracies[task] = []
     for subject in subjects:
-        edfs = load_data(subject, task)
-        if f"{subject}_{task}_pipeline" not in st.session_state:
-            st.session_state[f"{subject}_{task}_pipeline"] = train_model(edfs)
-        table = predict(st.session_state[f"{subject}_{task}_pipeline"], edfs)
+        model = load_data(subject, task)
+        scores = train_model(model)
+        table = predict(model)
         if table:
             correct = sum(table['equals'])
             total = len(table['equals'])
@@ -21,7 +20,7 @@ for task in tasks:
                 f"Subject: {subject} Task: {task} Accuracy: {accuracy:.2f}%",
                 icon="✅",
             )
-        for edf in edfs:
+        for edf in model.edfs:
             edf.raw.close()
             edf.filtered.close()
     st.write(f"Task: {task} Accuracy: {sum(tasks_accuracies[task]) / len(tasks_accuracies[task]):.2f}%")
