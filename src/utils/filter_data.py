@@ -41,16 +41,3 @@ def load_data(subject: str, task: str):
             edfs[i].training = False
     return edfs
 
-def get_epochs_and_labels(raw: BaseRaw):
-    """
-    Get epochs and labels from the raw data.
-    """
-    try:
-        events, events_id = mne.events_from_annotations(raw)
-        epochs = mne.Epochs(raw, events, events_id, tmin=0, tmax=1, baseline=None, picks=channels)
-        labels = epochs.events[:, -1]
-        return epochs, labels
-    except Exception as e:
-        print(f"Error getting epochs and labels: {e}")
-        return None, None
-

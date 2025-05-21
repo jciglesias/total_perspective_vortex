@@ -1,6 +1,7 @@
 import mne
 import matplotlib.pyplot as plt
 from mne.io import BaseRaw
+from src.Classes.edf import EDF
 
 subjects = [f"S{n:03}" for n in range(1, 110)]
 
@@ -12,70 +13,15 @@ tasks = {
 }
 
 channels = [
-    # 'Cp5.',
-    # 'Af3.',
-    # 'Fc2.',
-    # 'Ft8.',
-    # 'Po4.',
     'Cp3.',
-    # 'F6..',
-    # 'Tp8.',
-    # 'P3..',
-    # 'P2..',
-    # 'Po7.',
-    # 'T7..',
-    # 'C1..',
-    # 'Cp1.',
-    # 'C2..',
-    # 'Cp2.',
-    # 'Af7.',
-    # 'F4..',
     'C3..',
     'Fc4.',
-    # 'Fc1.',
-    # 'P6..',
-    # 'F1..',
     'Cpz.',
-    # 'Fpz.',
-    # 'F2..',
-    # 'P8..',
-    # 'O2..',
-    # 'Iz..',
-    # 'Af4.',
-    # 'P5..',
-    # 'Af8.',
-    # 'T10.',
     'Cp4.',
-    # 'P1..',
-    # 'Fc5.',
-    # 'Fp1.',
-    # 'Tp7.',
-    # 'F8..',
     'Fc3.',
-    # 'Po8.',
-    # 'Oz..',
-    # 'Fp2.',
-    # 'Poz.',
-    # 'O1..',
-    # 'Ft7.',
-    # 'P4..',
-    # 'Afz.',
-    # 'Fc6.',
-    # 'Fz..',
-    # 'Pz..',
     'Fcz.',
-    # 'P7..',
-    # 'F7..',
     'Cz..',
-    # 'Cp6.',
-    # 'F5..',
-    # 'C5..',
-    # 'F3..',
     'C4..',
-    # 'T9..',
-    # 'Po3.',
-    # 'T8..',
-    # 'C6..'
     ]
 
 def get_file_name(subject, task):
@@ -107,3 +53,29 @@ def create_image(raw: BaseRaw, filename: str):
     fig.savefig(file_address, format="png", dpi=300, bbox_inches="tight")
     plt.close(fig)
     return file_address
+
+def get_epochs_and_labels(raw: BaseRaw):
+    """
+    Get epochs and labels from the raw data.
+    """
+    try:
+        events, events_id = mne.events_from_annotations(raw)
+        epochs = mne.Epochs(raw, events, events_id, tmin=0, tmax=1, baseline=None, picks=channels)
+        labels = epochs.events[:, -1]
+        return epochs, labels
+    except Exception as e:
+        print(f"Error getting epochs and labels: {e}")
+        return None, None
+
+def prepare_epochs_labels_for_pipeline(edfs: list[EDF]):
+    """
+    Prepare epochs and labels for the pipeline.
+    """
+    x = []
+    y = []
+    for edf in edfs:
+        if edf.epochs is None:
+            edf.epochs, edf.labels = get_epochs_and_labels(edf.raw)
+        x += edf.epochs.get_data()[:,0].tolist()
+        y += edf.labels.tolist()
+    return x, y

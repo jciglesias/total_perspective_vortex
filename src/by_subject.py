@@ -24,7 +24,6 @@ task = st.selectbox(
     index=0,
 )
 
-# is_loaded = f"{subject}_{task}_filtered_raws" in st.session_state
 is_trained = f"{subject}_{task}_pipeline" in st.session_state
 if not f"{subject}_{task}_filtered_raws" in st.session_state:
     with st.container():
@@ -47,6 +46,8 @@ with predict_tab:
     with st.spinner("Predicting...", show_time=True):
         if f"{subject}_{task}_pipeline" in st.session_state:
             table = predict(st.session_state[f"{subject}_{task}_pipeline"], st.session_state[f"{subject}_{task}_edfs"])
+            if table is None:
+                st.rerun()
             col1, col2 = st.columns(2)
             with col1:
                 st.dataframe(

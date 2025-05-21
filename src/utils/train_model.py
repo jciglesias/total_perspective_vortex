@@ -1,30 +1,28 @@
 import streamlit as st
 from src.Classes.edf import EDF
-from src.utils.filter_data import get_epochs_and_labels
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 import streamlit as st
-import numpy as np
+from src.utils.utils import prepare_epochs_labels_for_pipeline
 
 def train_model(edfs: list[EDF]):
     """
     Train a model using the provided EDF data.
     """
     with st.spinner("Training the model...", show_time=True):
-        x = []
-        y = []
-        for edf in edfs:
-            if not edf.training:
-                continue
-            if edf.epochs is None:
-                edf.epochs, edf.labels = get_epochs_and_labels(edf.raw)
-            x.append(edf.epochs.get_data())
-            y.append(edf.labels)
+        # x = []
+        # y = []
+        # for edf in edfs:
+        #     if not edf.training:
+        #         continue
+        #     if edf.epochs is None:
+        #         edf.epochs, edf.labels = get_epochs_and_labels(edf.raw)
+        #     x += edf.epochs.get_data()[:,0].tolist()
+        #     y += edf.labels.tolist()
 
-        x = np.array(x)
-        x = [x.flatten() for x in x]
-        st.write("Number of features:", len(x[0]))
+        # # x = np.array(x)
+        # # x = [x.flatten() for x in x]
 
         pipeline = Pipeline([
             ('scaler', StandardScaler()),
@@ -32,6 +30,7 @@ def train_model(edfs: list[EDF]):
         ])
 
         try:
+            x, y = prepare_epochs_labels_for_pipeline(edfs)
             pipeline.fit(x, y)
 
             return pipeline

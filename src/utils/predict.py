@@ -1,26 +1,18 @@
-from src.utils.filter_data import get_epochs_and_labels
 from src.Classes.edf import EDF
-import numpy as np
 from sklearn.pipeline import Pipeline
+import streamlit as st
+from src.utils.utils import prepare_epochs_labels_for_pipeline
 
 
 def predict(pipeline: Pipeline, edfs: list[EDF]):
     """
     Predict the labels for the given raw data using the trained pipeline.
     """
-    x = []
-    labels = []
-    for edf in edfs:
-        if edf.training:
-            continue
-        if edf.epochs is None:
-            edf.epochs, edf.labels = get_epochs_and_labels(edf.raw)
-        x.append(edf.epochs.get_data())
-        labels += edf.labels.tolist()
-    x = np.array(x)
-    x = [x.flatten() for x in x]
+    if pipeline is None:
+        return None
     try:
-        predictions = pipeline.predict(x)[0]
+        x, labels = prepare_epochs_labels_for_pipeline(edfs)
+        predictions = pipeline.predict(x)
         equals = [a == y for a, y in zip(predictions, labels)]
         table = {
             "Epochs": range(1, len(predictions) + 1),
@@ -30,4 +22,5 @@ def predict(pipeline: Pipeline, edfs: list[EDF]):
         }
         return table
     except Exception as e:
+        st.error(f"Error predicting: {e}")
         return None
