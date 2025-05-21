@@ -1,11 +1,15 @@
 import streamlit as st
-import src.utils as ut
-from time import sleep
-from src.filter_data import load_data
-from src.train_model import train_model
+import src.utils.utils as ut
+from src.utils.filter_data import load_data, read_raw_data
+from src.utils.train_model import train_model
+from src.utils.predict import predict
 
-def predict():
-    pass
+def show_data(image, raw, col):
+    with col:
+        st.image(image)
+        st.write("Sampling Frequency:", raw.info['sfreq'])
+        st.write("Number of Channels:", len(raw.info['ch_names']))
+        st.write("Duration (s):", raw.times[-1])
 
 subjects = ut.subjects
 subject = st.selectbox(
@@ -20,31 +24,42 @@ task = st.selectbox(
     index=0,
 )
 
-is_loaded = f"{subject}_{task}_filtered_raws" in st.session_state
+# is_loaded = f"{subject}_{task}_filtered_raws" in st.session_state
 is_trained = f"{subject}_{task}_pipeline" in st.session_state
-load_tab, train_tab, predict_tab = st.tabs(["Load data", "Train model", "Predict"])
+if not f"{subject}_{task}_filtered_raws" in st.session_state:
+    with st.container():
+        st.session_state[f"{subject}_{task}_edfs"] = load_data(subject, task)
+load_tab, train_tab, predict_tab = st.tabs(["Process data", "Train model", "Predict"])
 with load_tab:
     col_l, col_r = st.columns(2)
     col_l.write("Raw data")
     col_r.write("Filtered data")
-    if not is_loaded:
-        load_data(subject, task)
-    for raw, filtered in zip(st.session_state[f"{subject}_{task}_raws"], st.session_state[f"{subject}_{task}_filtered_raws"]):
-        with col_l:
-            st.pyplot(raw.plot())
-            st.write("Sampling Frequency:", raw.info['sfreq'])
-            st.write("Number of Channels:", len(raw.info['ch_names']))
-            st.write("Duration (s):", raw.times[-1])
-        with col_r:
-            st.pyplot(filtered.plot())
-            st.write("Sampling Frequency:", filtered.info['sfreq'])
-            st.write("Number of Channels:", len(filtered.info['ch_names']))
-            st.write("Duration (s):", filtered.times[-1])
+    for edf in st.session_state[f"{subject}_{task}_edfs"]:
+        edf.raw_image = ut.create_image(edf.raw, f"{edf.filename}_raw_image.png")
+        edf.filtered_image = ut.create_image(edf.filtered, f"{edf.filename}_filtered_image.png")
+        show_data(edf.raw_image, edf.raw, col_l)
+        show_data(edf.filtered_image, edf.filtered, col_r)
 with train_tab:
-    if is_trained:
-        st.write("Model already trained.")
-    else:
-        st.session_state[f"{subject}_{task}_pipeline"] = train_model(st.session_state[f"{subject}_{task}_filtered_raws"])
+    if not is_trained:
+        st.session_state[f"{subject}_{task}_pipeline"] = train_model(st.session_state[f"{subject}_{task}_edfs"])
+    st.write("Model trained.")
 with predict_tab:
-    st.write("Predicting...")
-    predict()
+    with st.spinner("Predicting...", show_time=True):
+        if f"{subject}_{task}_pipeline" in st.session_state:
+            table = predict(st.session_state[f"{subject}_{task}_pipeline"], st.session_state[f"{subject}_{task}_edfs"])
+            col1, col2 = st.columns(2)
+            with col1:
+                st.dataframe(
+                    table,
+                    hide_index=True,
+                )
+            with col2:
+                correct = sum(table['equals'])
+                total = len(table['equals'])
+                st.metric(
+                    label="Accuracy",
+                    value=f"{correct}/{total}",
+                    delta=f"{correct / total:.2%}",
+                )
+        else:
+            st.write("No model trained yet.")
