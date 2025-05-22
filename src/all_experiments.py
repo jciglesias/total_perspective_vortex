@@ -5,25 +5,27 @@ from src.utils.utils import tasks, subjects
 import streamlit as st
 
 tasks_accuracies = {}
-for task in tasks:
-    tasks_accuracies[task] = []
-    for subject in subjects:
-        model = load_data(subject, task)
-        scores = train_model(model)
-        table = predict(model)
-        if table:
-            correct = sum(table['equals'])
-            total = len(table['equals'])
-            accuracy = correct / total * 100
-            tasks_accuracies[task].append(accuracy)
-            st.toast(
-                f"Subject: {subject} Task: {task} Accuracy: {accuracy:.2f}%",
-                icon="✅",
-            )
-        for edf in model.edfs:
-            edf.raw.close()
-            edf.filtered.close()
-    st.write(f"Task: {task} Accuracy: {sum(tasks_accuracies[task]) / len(tasks_accuracies[task]):.2f}%")
+st.write("Mean accuracy of the four different experiments for all 109 subjects:")
+with st.spinner("Loading data...", show_time=True):
+    for task in tasks:
+        tasks_accuracies[task] = []
+        for subject in subjects:
+            model = load_data(subject, task)
+            train_model(model)
+            table = predict(model)
+            if table:
+                correct = sum(table['equals'])
+                total = len(table['equals'])
+                accuracy = correct / total * 100
+                tasks_accuracies[task].append(accuracy)
+                st.toast(
+                    f"Subject: {subject} Task: {task} Accuracy: {accuracy:.2f}%",
+                    icon="✅",
+                )
+            for edf in model.edfs:
+                edf.raw.close()
+                edf.filtered.close()
+        st.write(f"Experiment: {task} Accuracy = {sum(tasks_accuracies[task]) / len(tasks_accuracies[task]):.2f}%")
 
 st.metric(
     label="Overall Accuracy",

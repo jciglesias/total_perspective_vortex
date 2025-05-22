@@ -1,6 +1,7 @@
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from src.Classes.edf import EDF
 from src.utils.utils import prepare_epochs_labels_for_pipeline
@@ -18,6 +19,7 @@ class Model:
         self.edfs = edfs
         self.pipeline = Pipeline([
             ('scaler', StandardScaler()),
+            ('pca', PCA()), 
             ('classifier', RandomForestClassifier())
         ])
 

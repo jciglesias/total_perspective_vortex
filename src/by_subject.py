@@ -1,7 +1,7 @@
 import streamlit as st
 import src.utils.utils as ut
-from src.utils.filter_data import load_data, read_raw_data
-from src.utils.train_model import train_model
+from src.utils.filter_data import load_data
+from src.utils.train_model import train_model, score_model
 from src.utils.predict import predict
 from pandas import DataFrame
 
@@ -34,16 +34,17 @@ with load_tab:
     col_l.write("Raw data")
     col_r.write("Filtered data")
     for edf in st.session_state[f"{subject}_{task}_model"].edfs:
-        edf.raw_image = ut.create_image(edf.raw, f"{edf.filename}_raw_image.png")
-        edf.filtered_image = ut.create_image(edf.filtered, f"{edf.filename}_filtered_image.png")
+        if edf.raw_image is None:
+            edf.raw_image = ut.create_image(edf.raw, f"{edf.filename}_raw_image.png")
+        if edf.filtered_image is None:
+            edf.filtered_image = ut.create_image(edf.filtered, f"{edf.filename}_filtered_image.png")
         show_data(edf.raw_image, edf.raw, col_l)
         show_data(edf.filtered_image, edf.filtered, col_r)
 with train_tab:
-    columns = ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"]
-    df = DataFrame([], columns=columns)
-    for i in range(5):
-        scores = train_model(st.session_state[f"{subject}_{task}_model"])
-        df.loc[i] = scores
+    model = st.session_state[f"{subject}_{task}_model"]
+    train_model(model)
+    df = score_model(model)
+    st.write(f"Cross-validation mean score: {df.mean(axis=None).mean() * 100:.2f}%")
     st.dataframe(
         df,
         column_config={
@@ -74,9 +75,7 @@ with train_tab:
             ),
         },
         hide_index=True
-        )
-    # st.write("Scores:", scores)
-    # st.write("Mean Score:", scores.mean())    
+        )   
 with predict_tab:
     with st.spinner("Predicting...", show_time=True):
         table = predict(st.session_state[f"{subject}_{task}_model"])
