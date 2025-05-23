@@ -1,6 +1,5 @@
 from src.Classes.model import Model
 import streamlit as st
-from src.utils.utils import prepare_epochs_labels_for_pipeline
 
 
 def predict(model: Model):

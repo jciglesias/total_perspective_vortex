@@ -1,9 +1,9 @@
 import streamlit as st
+from src.Classes.model import Model
 import src.utils.utils as ut
 from src.utils.filter_data import load_data
 from src.utils.train_model import train_model, score_model
 from src.utils.predict import predict
-from pandas import DataFrame
 
 def show_data(image, raw, col):
     with col:
@@ -27,7 +27,7 @@ task = st.selectbox(
 
 if f"{subject}_{task}_model" not in st.session_state:
     with st.container():
-        st.session_state[f"{subject}_{task}_model"] = load_data(subject, task)
+        st.session_state[f"{subject}_{task}_model"] = Model(load_data(subject, task))
 load_tab, train_tab, predict_tab = st.tabs(["Process data", "Train model", "Predict"])
 with load_tab:
     col_l, col_r = st.columns(2)

@@ -1,7 +1,6 @@
 import mne
 import matplotlib.pyplot as plt
 from mne.io import BaseRaw
-from src.Classes.edf import EDF
 import numpy as np
 
 subjects = [f"S{n:03}" for n in range(1, 110)]
@@ -78,17 +77,17 @@ def extract_features(epoch_data):
         features.append(np.sum(ch ** 2))
     return features
 
-def prepare_epochs_labels_for_pipeline(edfs: list[EDF]):
-    """
-    Prepare epochs and labels for the pipeline.
-    """
-    x = []
-    y = []
-    for edf in edfs:
-        if edf.epochs is None:
-            edf.epochs, edf.labels = get_epochs_and_labels(edf.raw)
-        # x += edf.epochs.get_data(picks=channels).mean(axis=1).tolist()
-        for epoch in edf.epochs.get_data():
-            x.append(extract_features(epoch))
-        y += edf.labels.tolist()
-    return x, y
+# def prepare_epochs_labels_for_pipeline(edfs: list[EDF]):
+#     """
+#     Prepare epochs and labels for the pipeline.
+#     """
+#     x = []
+#     y = []
+#     for edf in edfs:
+#         if edf.epochs is None:
+#             edf.epochs, edf.labels = get_epochs_and_labels(edf.raw)
+#         # x += edf.epochs.get_data(picks=channels).mean(axis=1).tolist()
+#         for epoch in edf.epochs.get_data(picks=channels):
+#             x.append(extract_features(epoch))
+#         y += edf.labels.tolist()
+#     return x, y

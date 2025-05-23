@@ -1,3 +1,4 @@
+from src.Classes.model import Model
 from src.utils.filter_data import load_data
 from src.utils.predict import predict
 from src.utils.train_model import train_model
@@ -10,7 +11,7 @@ with st.spinner("Loading data...", show_time=True):
     for task in tasks:
         tasks_accuracies[task] = []
         for subject in subjects:
-            model = load_data(subject, task)
+            model = Model(load_data(subject, task))
             train_model(model)
             table = predict(model)
             if table:

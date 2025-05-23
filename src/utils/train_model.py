@@ -8,7 +8,7 @@ def score_model(model: Model):
     """
     Train a model using the provided EDF data.
     """
-    with st.spinner("Training the model...", show_time=True):
+    with st.spinner("Scoring the model...", show_time=True):
         try:
             columns = ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"]
             df = DataFrame([], columns=columns)
@@ -18,7 +18,7 @@ def score_model(model: Model):
             return df
 
         except Exception as e:
-            st.error(f"Error training the model: {e}")
+            st.error(f"Error scoring the model: {e}")
             return None
 
 def train_model(model: Model):
