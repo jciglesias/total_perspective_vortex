@@ -6,9 +6,9 @@ from src.utils.filter_data import load_data
 def show_data(image, raw, col):
     with col:
         st.image(image)
-        st.write("Sampling Frequency:", raw.info['sfreq'])
-        st.write("Number of Channels:", len(raw.info['ch_names']))
-        st.write("Duration (s):", raw.times[-1])
+        # st.write("Sampling Frequency:", raw.info['sfreq'])
+        # st.write("Number of Channels:", len(raw.info['ch_names']))
+        # st.write("Duration (s):", raw.times[-1])
 
 subjects = ut.subjects
 subject = st.selectbox(
