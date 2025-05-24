@@ -27,45 +27,48 @@ class Model:
             ('clf', KNeighborsClassifier()),
         ])
 
-        x_train_shape = self.edfs[0].x_train.shape
-        x_test_shape = self.edfs[0].x_test.shape
-        self.x_train = np.empty(shape=(0, x_train_shape[1], x_train_shape[2]))
-        self.x_test = np.empty(shape=(0, x_test_shape[1], x_test_shape[2]))
-        self.y_train = np.empty(0)
-        self.y_test = np.empty(0)
-        for edf in self.edfs:
-            self.x_train = np.concatenate((self.x_train, edf.x_train), axis=0)
-            self.x_test = np.concatenate((self.x_test, edf.x_test), axis=0)
-            self.y_train = np.concatenate((self.y_train, edf.y_train), axis=0)
-            self.y_test = np.concatenate((self.y_test, edf.y_test), axis=0)
-        print(f"x_train shape: {self.x_train.shape}")
-        print(f"x_test shape: {self.x_test.shape}")
-        print(f"y_train shape: {self.y_train.shape}")
-        print(f"y_test shape: {self.y_test.shape}")
     
     def train(self):
         """
         Train the model using the provided EDF data.
         """
         if not self.is_trained:
+            x_train_shape = self.edfs[0].x_train.shape
+            x_test_shape = self.edfs[0].x_test.shape
+            self.x_train = np.empty(shape=(0, x_train_shape[1], x_train_shape[2]))
+            self.x_test = np.empty(shape=(0, x_test_shape[1], x_test_shape[2]))
+            self.y_train = np.empty(0)
+            self.y_test = np.empty(0)
+            for edf in self.edfs:
+                self.x_train = np.concatenate((self.x_train, edf.x_train), axis=0)
+                self.x_test = np.concatenate((self.x_test, edf.x_test), axis=0)
+                self.y_train = np.concatenate((self.y_train, edf.y_train), axis=0)
+                self.y_test = np.concatenate((self.y_test, edf.y_test), axis=0)
             self.pipeline.fit(self.x_train, self.y_train)
             self.is_trained = True
     
-    def predict(self, subject:str):
-        x_test_shape = self.edfs[0].x_test.shape
-        x_test = np.empty(shape=(0, x_test_shape[1], x_test_shape[2]))
-        y_test = np.empty(0)
-        for edf in self.edfs:
-            if subject in edf.filename:
-                x_test = np.concatenate((x_test, edf.x_test), axis=0)
-                y_test = np.concatenate((y_test, edf.y_test), axis=0)
-        predictions = self.pipeline.predict(x_test)
-        equals = [a == y for a, y in zip(predictions, y_test)]
+    def predict(self):
+        predictions = self.pipeline.predict(self.x_test)
+        equals = [a == y for a, y in zip(predictions, self.y_test)]
         table = {
             "Epochs": range(1, len(predictions) + 1),
             "Prediction": predictions,
-            "Truth": y_test,
+            "Truth": self.y_test,
             "equals": equals,
         }
         return table
+    
+    def score(self):
+        """
+        Score the model using cross-validation.
+        """
+        from sklearn.model_selection import cross_val_score
+        from pandas import DataFrame
+        
+        columns = ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"]
+        df = DataFrame([], columns=columns)
+        for i in range(5):
+            scores = cross_val_score(self.pipeline, self.x_train, self.y_train, cv=5)
+            df.loc[i] = scores
+        return df
 

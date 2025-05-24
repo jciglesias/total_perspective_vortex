@@ -1,7 +1,5 @@
 from src.Classes.model import Model
 from src.utils.filter_data import load_data
-from src.utils.predict import predict
-from src.utils.train_model import train_model
 from src.utils.utils import tasks, subjects
 import streamlit as st
 
@@ -12,8 +10,8 @@ with st.spinner("Loading data...", show_time=True):
         tasks_accuracies[task] = []
         for subject in subjects:
             model = Model(load_data(subject, task))
-            train_model(model)
-            table = predict(model)
+            model.train()
+            table = model.predict()
             if table:
                 correct = sum(table['equals'])
                 total = len(table['equals'])

@@ -2,8 +2,6 @@ import streamlit as st
 from src.Classes.model import Model
 import src.utils.utils as ut
 from src.utils.filter_data import load_data
-from src.utils.train_model import train_model, score_model
-from src.utils.predict import predict
 
 def show_data(image, raw, col):
     with col:
@@ -42,8 +40,8 @@ with load_tab:
         show_data(edf.filtered_image, edf.filtered, col_r)
 with train_tab:
     model = st.session_state[f"{subject}_{task}_model"]
-    train_model(model)
-    df = score_model(model)
+    model.train()
+    df = model.score()
     st.write(f"Cross-validation mean score: {df.mean(axis=None).mean() * 100:.2f}%")
     st.dataframe(
         df,
@@ -78,7 +76,7 @@ with train_tab:
         )   
 with predict_tab:
     with st.spinner("Predicting...", show_time=True):
-        table = predict(st.session_state[f"{subject}_{task}_model"])
+        table = st.session_state[f"{subject}_{task}_model"].predict()
         if table is None:
             st.write("No model trained yet.")
             st.stop()
