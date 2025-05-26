@@ -2,6 +2,7 @@ import mne
 import matplotlib.pyplot as plt
 from mne.io import BaseRaw
 import numpy as np
+import streamlit as st
 
 subjects = [f"S{n:03}" for n in range(1, 110)]
 
@@ -23,6 +24,34 @@ channels = [
     'Cz..',
     'C4..',
     ]
+
+cross_val_column_config = {
+            "fold_1": st.column_config.NumberColumn(
+                "Fold 1",
+                help="Fold 1 score",
+                format="percent",
+            ),
+            "fold_2": st.column_config.NumberColumn(
+                "Fold 2",
+                help="Fold 2 score",
+                format="percent",
+            ),
+            "fold_3": st.column_config.NumberColumn(
+                "Fold 3",
+                help="Fold 3 score",
+                format="percent",
+            ),
+            "fold_4": st.column_config.NumberColumn(
+                "Fold 4",
+                help="Fold 4 score",
+                format="percent",
+            ),
+            "fold_5": st.column_config.NumberColumn(
+                "Fold 5",
+                help="Fold 5 score",
+                format="percent",
+            ),
+        }
 
 def get_file_name(subject, task):
     """
@@ -76,18 +105,3 @@ def extract_features(epoch_data):
         features.append(np.std(ch))
         features.append(np.sum(ch ** 2))
     return features
-
-# def prepare_epochs_labels_for_pipeline(edfs: list[EDF]):
-#     """
-#     Prepare epochs and labels for the pipeline.
-#     """
-#     x = []
-#     y = []
-#     for edf in edfs:
-#         if edf.epochs is None:
-#             edf.epochs, edf.labels = get_epochs_and_labels(edf.raw)
-#         # x += edf.epochs.get_data(picks=channels).mean(axis=1).tolist()
-#         for epoch in edf.epochs.get_data(picks=channels):
-#             x.append(extract_features(epoch))
-#         y += edf.labels.tolist()
-#     return x, y

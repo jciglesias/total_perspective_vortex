@@ -1,12 +1,13 @@
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
-
-from sklearn.decomposition import PCA
+import numpy as np
+from pandas import DataFrame
 from src.Classes.edf import EDF
 from src.Classes.feature_extractor import FeatureExtractor
-import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 
 class Model:
     is_trained: bool = False
@@ -23,7 +24,6 @@ class Model:
             ('features', FeatureExtractor()),
             ('scaler', StandardScaler()),
             ('reduce_dim', PCA()),
-            # ('clf', RandomForestClassifier()),
             ('clf', KNeighborsClassifier()),
         ])
 
@@ -62,13 +62,10 @@ class Model:
         """
         Score the model using cross-validation.
         """
-        from sklearn.model_selection import cross_val_score
-        from pandas import DataFrame
-        
         columns = ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"]
         df = DataFrame([], columns=columns)
         for i in range(5):
-            scores = cross_val_score(self.pipeline, self.x_train, self.y_train, cv=5)
+            x_train, x_test, y_train, y_test = train_test_split(self.x_train, self.y_train, test_size=0.2, random_state=i)
+            scores = cross_val_score(self.pipeline, x_train, y_train, cv=5)
             df.loc[i] = scores
         return df
-

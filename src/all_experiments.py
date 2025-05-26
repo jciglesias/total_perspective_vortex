@@ -21,9 +21,7 @@ with st.spinner("Loading data...", show_time=True):
                     f"Subject: {subject} Task: {task} Accuracy: {accuracy:.2f}%",
                     icon="✅",
                 )
-            for edf in model.edfs:
-                edf.raw.close()
-                edf.filtered.close()
+            del model
         st.write(f"Experiment: {task} Accuracy = {sum(tasks_accuracies[task]) / len(tasks_accuracies[task]):.2f}%")
 
 st.metric(
