@@ -14,17 +14,17 @@ tasks = {
 }
 
 channels = [
-    'Cp3.',
-    'C3..',
-    'Fc4.',
-    'Cpz.',
-    'Cp4.',
-    'Fc3.',
-    'Fcz.',
-    'Cz..',
-    'C4..',
-    ]
-
+    'C3..', 'Cz..', 'C4..',      # Central
+    'Cp3.', 'Cpz.', 'Cp4.',      # Centro-parietal
+    'Fc3.', 'Fcz.', 'Fc4.',      # Frontal-central
+    'P3..', 'Pz..', 'P4..',      # Parietal
+    'T7..', 'T8..',              # Temporal
+    'Cp1.', 'Cp2.',              # Adjacent centro-parietal
+    'Fc1.', 'Fc2.',              # Adjacent frontal-central
+    'Fz..',                      # Midline frontal
+    'F3..', 'F4..',              # Frontal
+    'O1..', 'Oz..', 'O2..',      # Occipital
+]
 cross_val_column_config = {
             "fold_1": st.column_config.NumberColumn(
                 "Fold 1",
@@ -89,7 +89,8 @@ def get_epochs_and_labels(raw: BaseRaw):
     """
     try:
         events, events_id = mne.events_from_annotations(raw)
-        epochs = mne.Epochs(raw, events, events_id, tmin=0, tmax=1, baseline=None, picks=channels)
+        epochs = mne.Epochs(raw, events, events_id, tmin=0, tmax=1, baseline=None)
+        # epochs = mne.Epochs(raw, events, events_id, tmin=0, tmax=1, baseline=None, picks=channels)
         labels = epochs.events[:, -1]
         return epochs, labels
     except Exception as e:

@@ -1,6 +1,7 @@
 import streamlit as st
 
-st.write("# Total Perspective Vortex")
+# st.write("# Total Perspective Vortex")
+st.header("Total Perspective Vortex")
 
 st.write(
 """\"The Total Perspective Vortex derives its picture of the whole Universe on the principle of
