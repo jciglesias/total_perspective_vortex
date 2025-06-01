@@ -8,6 +8,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
+from mne.decoding import CSP
 
 class Model:
     is_trained: bool = False
@@ -21,9 +22,10 @@ class Model:
     def __init__(self, edfs: list[EDF]):
         self.edfs = edfs
         self.pipeline = Pipeline([
-            ('features', FeatureExtractor()),
+            # ('features', FeatureExtractor()),
+            ('csp', CSP(n_components=4, reg=None, log=True, norm_trace=False)),
             ('scaler', StandardScaler()),
-            ('reduce_dim', PCA()),
+            # ('reduce_dim', PCA()),
             ('clf', KNeighborsClassifier()),
         ])
 
